@@ -6,16 +6,16 @@ services:
       DB_DRIVER: "sqlite3"
       SQLITE_DB_PATH: "Database.db"
       HEADERS_FROM_EMAIL: "YourEmailHere"
-      DISCORD_TOKEN: "OTc1NDAyODg3Mzg5Nzk4NDMw.GtGNsk.Cyb0evkdvFE3NMEwktuNicv84JA75Q3ZT5rCMQ"
-      CCP_CLIENT_ID: "3b3c607af9814946b423cf3e71b52768"
-      CCP_SECRET_KEY: "z3kykdAO2aVY4ejiAG5mZZ5Oz4NNfBsIVzXIEYMp"
-      CCP_CALLBACK_URL: "https://github.eveinsight.net/Insight/callback"
+      DISCORD_TOKEN: ""
+      CCP_CLIENT_ID: ""
+      CCP_SECRET_KEY: ""
+      CCP_CALLBACK_URL: ""
       REDIS_HOST: "redis"
       REDIS_PORT: 6379
       REDIS_PASSWORD: "pass"
       REDIS_PURGE: "FALSE"
       REDIS_SSL: "FALSE"
-      INSIGHT_ADMINS: "Dex#7252; AnotherAdminUserID"
+      INSIGHT_ADMINS: "AdminUserID; AnotherAdminUserID"
       WEBSERVER_ENABLED: "FALSE"
     volumes:
       - insight-data:/app
