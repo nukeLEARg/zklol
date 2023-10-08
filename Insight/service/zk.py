@@ -201,6 +201,7 @@ class zk(object):
                             headers = resp.headers
                             body = await resp.text()
                             print("{} - RedisQ zk error code: {}".format(str(datetime.datetime.utcnow()), resp.status))
+                           # print("Error: {} Headers: {} Body: {}".format(resp.status, str(headers), str(body)))
                             lg.warning('Error: {} Headers: {} Body: {}'.format(resp.status, str(headers), str(body)))
                             if 400 <= resp.status < 500:
                                 await asyncio.sleep(300)

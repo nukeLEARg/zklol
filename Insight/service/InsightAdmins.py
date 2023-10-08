@@ -26,7 +26,7 @@ class InsightAdmins(object):
         if len(self._admins) > 0:
             div = '======================='
             print(div)
-            print('Insight Admin Discord User IDs:')
+            print('Zklol Admin Discord User IDs:')
             for i in self._admins:
                 print(i)
             print(div)
@@ -40,7 +40,7 @@ class InsightAdmins(object):
                 self.logger.warning("User '{}' attempted to access an admin command and was denied.".format(other_id))
             return is_admin
         except Exception as ex:
-            print("InsightAdmins error: {}".format(ex))
+            print("ZklolAdmins error: {}".format(ex))
             traceback.print_exc()
             return False
 

@@ -46,9 +46,9 @@ class service_module(object):
                 else:
                     print("You are missing the 'from' email field in your config file. It is recommended to set this to "
                           "your webmaster email to include in HTTP request headers from Insight.")
-                tmp_dict['Maintainer'] = 'admin@eveinsight.net (https://git.eveinsight.net)'
+                tmp_dict['Maintainer'] = 'placeholder'
                 web_lib = 'requests/{}'.format(requests.__version__) if lib_requests else 'aiohttp/{}'.format(aiohttp.__version__)
-                tmp_dict['User-Agent'] = 'Insight/{} ({}; {}) Python/{}'.format(str(self.get_version()), platform.platform(aliased=True, terse=True), web_lib, platform.python_version())
+                tmp_dict['User-Agent'] = 'zklol/{} ({}; {}) Python/{}'.format(str(self.get_version()), platform.platform(aliased=True, terse=True), web_lib, platform.python_version())
                 self._header_dict[key] = tmp_dict
             except Exception as ex:
                 print('{} error when loading request headers.'.format(ex))
@@ -85,17 +85,17 @@ class service_module(object):
         """Prints a welcome message with current version."""
         div = '==============================================================================================='
         print(div)
-        print('Insight {} (Database {}) (discord.py v{}) on {} with Python/{}'.format(str(self.get_version()),
+        print('zklol {} (Database {}) (discord.py v{}) on {} with Python/{}'.format(str(self.get_version()),
                                                                                       str(self.get_db_version()),
                                                                                       str(discord.__version__),
                                                                                       platform.platform(aliased=True, terse=True),
                                                                                       platform.python_version()))
-        print("Insight is released under the GNU General Public License v3.0. See the included 'License.md' file.")
-        print("Additional information and code source are available at https://eveinsight.net")
+        print("zklol is released under the GNU General Public License v3.0. See the included 'License.md' file.")
+        #print("Additional information and code source are available at https://eveinsight.net")
         print(div)
 
     def update_available(self):
-        giturl = 'https://api.github.com/repos/Nathan-LS/Insight/releases/latest'
+        giturl = 'https://api.github.com/repos/nukeLEARg/zklol/releases/latest'
         try:
             resp = requests.get(url=giturl, headers=self.get_headers(lib_requests=True), timeout=5, verify=True)
             if resp.status_code == 200:
@@ -121,7 +121,7 @@ class service_module(object):
 
     @classmethod
     def get_version(cls):
-        version_str = 'v1.7.0'
+        version_str = 'v1.0.0'
         return LooseVersion(version_str)
 
     @classmethod
