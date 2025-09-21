@@ -370,6 +370,11 @@ class Options_CapRadar(Base_Feed.base_activefeed):
         yield 60765  # Raiju
         yield 74141  # Freki
         yield 74316  # Bestla
+        yield 78414  # Shapash
+        yield 77726  # Cybele
+        yield 85062  # Sidewinder
+        yield 85236  # Python
+        yield 85229  # Cobra
 
 
     def npc_officer_ids(self):
