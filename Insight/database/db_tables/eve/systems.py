@@ -56,6 +56,12 @@ class Systems(dec_Base.Base, name_only, individual_api_pulling, index_api_updati
         other_x = 0
         other_y = 0
         other_z = 0
+        if  isinstance(other, tb_Filter_systems) and other.object_item.system_id == 30100000:
+            other.object_item.pos_x, other.object_item.pos_y, other.object_item.pos_z = 4732782451200000, 2722598544370000, -1508346782640000
+        if  isinstance(other, Systems) and other.system_id == 30100000:
+            other.pos_x, other.pos_y, other.pos_z = 4732782451200000, 2722598544370000, -1508346782640000
+        if self.system_id == 30100000:
+            self.pos_x, self.pos_y, self.pos_z = 4732782451200000, 2722598544370000, -1508346782640000
         if isinstance(other, Systems):
             other_x, other_y, other_z = other.pos_x, other.pos_y, other.pos_z
         if isinstance(other, tb_Filter_systems):

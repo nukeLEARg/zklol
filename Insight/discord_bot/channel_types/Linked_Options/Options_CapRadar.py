@@ -12,7 +12,7 @@ class Options_CapRadar(Base_Feed.base_activefeed):
         assert isinstance(insight_channel, capRadar.capRadar)
         super().__init__(insight_channel)
         self.super_ids = [30,659]
-        self.capital_ids = [547, 485, 1538, 883]
+        self.capital_ids = [547, 485, 1538, 883, 4594]
         self.blops_ids = [898]
         self.at_ids = list(self.at_ship_ids())
         self.officer_ids = list(self.npc_officer_ids())
@@ -366,6 +366,16 @@ class Options_CapRadar(Base_Feed.base_activefeed):
         yield 45531  # Victor
         yield 48636  # Hydra
         yield 48635  # Tiamat
+        yield 60764  # Laelaps
+        yield 60765  # Raiju
+        yield 74141  # Freki
+        yield 74316  # Bestla
+        yield 78414  # Shapash
+        yield 77726  # Cybele
+        yield 85062  # Sidewinder
+        yield 85236  # Python
+        yield 85229  # Cobra
+
 
     def npc_officer_ids(self):
         yield 553  # angels
