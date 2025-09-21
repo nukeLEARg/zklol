@@ -17,6 +17,8 @@ import InsightLogger
 import time
 from InsightSubsystems.Cache.CacheEndpoint import LastShip
 from InsightUtilities.StaticHelpers import Helpers
+import random
+import string
 
 
 class zk(object):
@@ -36,7 +38,7 @@ class zk(object):
         self.delay_km = queue.Queue()  # delay from occurrence to load
         self.delay_process = queue.Queue()  # process/name resolve delay
         self.delay_next = queue.Queue()  # delay between zk requests
-        self.run_websocket = self.service.cli_args.websocket
+        self.run_websocket = False
 
     @staticmethod
     def add_delay(q, other_time, minutes=False):
@@ -79,44 +81,18 @@ class zk(object):
 
     @staticmethod
     def generate_identifier():
-        filename = 'zk_identifier.txt'
-        try:
-            with open(filename, 'r') as f:  # legacy check. Import the id to the database and then delete the file.
-                text = f.read()
-                if tb_meta.set("zk_identifier", {"value": text}):
-                    print("Successfully imported the ZK identifier into the database. "
-                          "It is safe to remove the legacy '{}' file".format(filename))
-                else:
-                    print("Error importing legacy identifier for ZK. Stopping...")
-                    sys.exit(1)
-            try:
-                os.remove(filename)
-            except Exception as ex:
-                print(ex)
-                print("Error removing legacy ZK identifier file. You can remove the file '{}' as it has been "
-                      "imported to the database and no longer needed.".format(filename))
-            return text
-        except FileNotFoundError:
-            d = tb_meta.get("zk_identifier")
-            zk_id = Helpers.get_nested_value(d, "", "data", "value")
-            if len(zk_id) <= 5:
-                print("ZK id error - too short or not set")
-                sys.exit(1)
-            else:
-                return zk_id
+        characters = string.ascii_letters + string.digits
+        random_string = ''.join(random.choice(characters) for _ in range(20))
+        return random_string
 
-    def generate_redisq_url(self, no_identifier=False):
-        if self.config.get("ZK_ID_RESET"):
-            if not tb_meta.delete("zk_identifier"):
-                print("Error resetting zk identifier")
-                sys.exit(1)
-            else:
-                print("ZK identifier was reset.")
+    def generate_redisq_url(self):
         identifier = self.generate_identifier()
         base_url = self.config.get("ZK_REDISQ_URL")
-        if no_identifier or identifier is None:
+        if identifier is None:
+            print("identifier is none")
             return base_url
         else:
+            print("{}?queueID={}".format(base_url, identifier))
             return "{}?queueID={}".format(base_url, identifier)
 
     def url_stream(self):
@@ -184,7 +160,7 @@ class zk(object):
             next_delay = datetime.datetime.utcnow()
             while self.run:
                 try:
-                    async with client.get(url=self.url_stream(), timeout=45) as resp:
+                    async with client.get(url=self.zk_stream_url, timeout=45) as resp:
                         if resp.status == 200:
                             data = await resp.json()
                             package = data.get('package')
@@ -196,12 +172,13 @@ class zk(object):
                         elif resp.status == 429:  # error limited
                             print("{} {}".format(str(datetime.datetime.utcnow()),
                                                  "zKill error limited. Are you using more than 1 bot with the same zk queue identifier? Delete your 'zk_identifier.txt' file."))
+                            self.zk_stream_url = self.generate_redisq_url()
                             await asyncio.sleep(900)
                         else:
                             headers = resp.headers
                             body = await resp.text()
-                            print("{} - RedisQ zk error code: {}".format(str(datetime.datetime.utcnow()), resp.status))
-                           # print("Error: {} Headers: {} Body: {}".format(resp.status, str(headers), str(body)))
+                            print("{} - RedisQ zk error code: {}  URL: {}".format(str(datetime.datetime.utcnow()), resp.status, str(self.zk_stream_url)))
+                            print("Error: {} Headers: {} Body: {} ".format(resp.status, str(headers), str(body)))
                             lg.warning('Error: {} Headers: {} Body: {}'.format(resp.status, str(headers), str(body)))
                             if 400 <= resp.status < 500:
                                 await asyncio.sleep(300)
