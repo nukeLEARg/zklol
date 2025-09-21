@@ -173,7 +173,7 @@ class zk(object):
                             print("{} {}".format(str(datetime.datetime.utcnow()),
                                                  "zKill error limited. Are you using more than 1 bot with the same zk queue identifier? Delete your 'zk_identifier.txt' file."))
                             self.zk_stream_url = self.generate_redisq_url()
-                            await asyncio.sleep(900)
+                            await asyncio.sleep(.1)
                         else:
                             headers = resp.headers
                             body = await resp.text()
