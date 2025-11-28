@@ -29,7 +29,7 @@ class EVEsso(object):
         self._get_config()
         self.callback_states = {} #callback states waiting; key = unique state param, value = async event
         self.callback_codes = {} #callback states waiting; key = unique state param, value = code
-        self.callback_states_lock = asyncio.Lock(loop=asyncio.get_event_loop())
+        self.callback_states_lock = asyncio.Lock()
         self.jwk_set = {}
         self._load_jwt_key_sets()
         if self.service.cli_args.auth:

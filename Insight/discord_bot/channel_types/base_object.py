@@ -31,7 +31,7 @@ class discord_feed_service(object):
         self.channel_manager = self.service.channel_manager
         self.discord_client = self.service.channel_manager.get_discord_client()
 
-        self.kmQueue = janus.Queue(loop=self.discord_client.loop)
+        self.kmQueue = janus.Queue()
         self.__deque_task = None
         self.linked_options = self.get_linked_options()
         self.setup_table()
@@ -40,7 +40,7 @@ class discord_feed_service(object):
         self.last_mention = datetime.datetime.utcnow() - datetime.timedelta(hours=24)
         self.last_prune = datetime.datetime.utcnow()
         self.appearance_class = None
-        self.lock = asyncio.Lock(loop=self.discord_client.loop)
+        self.lock = asyncio.Lock()
         InsightLogger.InsightLogger.time_log(self.logger, st, 'Feed loading and setup')
 
     async def get_queue_length(self) -> int:

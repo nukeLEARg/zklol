@@ -8,17 +8,37 @@ class LimitClient(object):
     def __init__(self, parent_limiter=None, provisioned_amount=1000, second_interval=1, id_name="", redact=False):
         if parent_limiter and not isinstance(parent_limiter, LimitClient):
             raise InsightExc.Internal.InsightException("Invalid parent limiter.")
-        self.loop = asyncio.get_event_loop()
+        
+        # Synchronous attributes are set here
         self.parent_limiter: LimitClient = parent_limiter
         self.provisioned_amount = provisioned_amount
-        self.semaphores = asyncio.BoundedSemaphore(value=self.provisioned_amount, loop=self.loop)
         self.interval = second_interval
-        self.task_queue = asyncio.PriorityQueue(loop=self.loop)
-        self.process_queue = self.loop.create_task(self._process_queue())
         self.identifier = id_name
         self.redact = redact
         self.pending_lock_max = 1000000000
-        self.pending_lock_semaphores = asyncio.Semaphore(value=self.pending_lock_max, loop=self.loop)
+
+        # Async attributes are declared but not initialized
+        # They will be initialized by calling the async `_init` method
+        self.semaphores = None
+        self.task_queue = None
+        self.process_queue = None
+        self.pending_lock_semaphores = None
+
+    # --- NEW ASYNC INITIALIZER METHOD ---
+    async def _init_async(self):
+        """
+        An async initializer that creates the asyncio-dependent objects.
+        This must be awaited after the LimitClient is instantiated.
+        """
+        # All asyncio objects are created here, without the 'loop' argument.
+        # They will automatically attach to the running event loop.
+        self.semaphores = asyncio.BoundedSemaphore(value=self.provisioned_amount)
+        self.task_queue = asyncio.PriorityQueue()
+        self.pending_lock_semaphores = asyncio.Semaphore(value=self.pending_lock_max)
+        
+        # The background task is also created here
+        self.process_queue = asyncio.create_task(self._process_queue())
+
 
     def limited(self) -> bool:
         return self.semaphores.locked()
@@ -66,7 +86,7 @@ class LimitClient(object):
                 cf: ComparableFuture = r[1]
                 f = cf.get_future()
                 await self._consume_ticket()
-                self.loop.call_soon_threadsafe(partial(f.set_result, 0))
+                loop.call_soon_threadsafe(partial(f.set_result, 0))
             except Exception as ex:
                 print(ex)
                 await asyncio.sleep(5)
@@ -86,7 +106,7 @@ class LimitClient(object):
     async def _release_ticket(self):
         if self.parent_limiter:
             await self.parent_limiter._release_ticket()
-        self.loop.create_task(self._interval_release_task())
+        asyncio.create_task(self._interval_release_task())
 
     async def _interval_release_task(self):
         await asyncio.sleep(self.interval)

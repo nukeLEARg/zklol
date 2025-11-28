@@ -21,7 +21,7 @@ class Channel_manager(object):
         self._discord_client: discord_bot.Discord_Insight_Client = None
         self.id_locks = InsightUtilities.AsyncLockManager()
         self._delay_post = queue.Queue()
-        self.load_channels_lock = asyncio.Lock(loop=asyncio.get_event_loop())
+        self.load_channels_lock = asyncio.Lock()
 
     async def add_delay(self, other_time):
         zk_module.add_delay(self._delay_post, other_time)

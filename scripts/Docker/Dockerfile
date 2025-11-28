@@ -4,9 +4,9 @@ FROM openjdk:11 as SwaggerRunner
 ARG CodegenVersion="2.4.25"
 RUN wget https://repo1.maven.org/maven2/io/swagger/swagger-codegen-cli/$CodegenVersion/swagger-codegen-cli-$CodegenVersion.jar -O swagger-codegen-cli.jar
 RUN java -jar ./swagger-codegen-cli.jar generate \
- -i "https://esi.evetech.net/_latest/swagger.json" \
- -l python \
- -o /python-client
+    -i "https://esi.evetech.net/_latest/swagger.json" \
+    -l python \
+    -o /python-client
 
 FROM alpine:latest as SDE
 RUN wget https://www.fuzzwork.co.uk/dump/sqlite-latest.sqlite.bz2
@@ -97,23 +97,26 @@ ENV PYTHONUNBUFFERED=1
 
 #packages for Insight and apt utils
 RUN apt-get update && apt-get install -y \
- apt-utils \
- curl \
- ca-certificates \
- gnupg \
- lsb-release \
- build-essential \
- git \
- zip \
- sudo
+    apt-utils \
+    curl \
+    ca-certificates \
+    gnupg \
+    lsb-release \
+    build-essential \
+    git \
+    zip \
+    sudo
+
+RUN apt-get update && apt-get install -y apt-transport-https
+
 
 #https://www.postgresql.org/download/linux/debian/
-RUN sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+RUN sh -c 'echo "deb http://apt-archive.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
 RUN curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
 
 #https://www.psycopg.org/docs/install.html#install-from-source avoid using pre-compiled binary for psycopg2 driver
 RUN apt-get update && apt-get install -y \
- libpq-dev
+    libpq-dev
 
 
 RUN rm -rf /var/lib/apt/lists/*

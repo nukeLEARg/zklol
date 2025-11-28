@@ -13,16 +13,16 @@ class AbstractEndpoint(metaclass=InsightSingleton):
         self.pool = self.cm.tp
         self.key_prefix = str(str(self.__class__.__name__).replace("_", ""))
         self.lg = InsightLogger.InsightLogger.get_logger('Cache.{}'.format(self.key_prefix), 'Cache.log', child=True)
-        self.lock = asyncio.Lock(loop=self.cm.loop)
-        self.lock_key_strings = asyncio.Lock(loop=self.cm.loop)
+        self.lock = asyncio.Lock()
+        self.lock_key_strings = asyncio.Lock()
         self.key_strings = {}
-        self.key_locks = AsyncLockManager(self.cm.loop)
-        self.loop = self.cm.loop
+        self.key_locks = AsyncLockManager()
         self.db_sessions: DBSessions = DBSessions()
         self.config = self.cm.config
 
     async def executor(self, callback, *args, **kwargs):
-        return await self.loop.run_in_executor(self.cm.tp, partial(callback, *args, **kwargs))
+        loop = asyncio.get_running_loop()
+        return await loop.run_in_executor(self.cm.tp, partial(callback, *args, **kwargs))
 
     async def get_lock(self, key_str: str):
         return await self.key_locks.get_object(key=key_str)

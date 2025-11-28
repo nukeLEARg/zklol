@@ -26,7 +26,7 @@ class LastShip(AbstractMultiEndpoint):
         ]
         super().__init__(cache_manager)
         self.precache: int = self.config.get("SUBSYSTEM_CACHE_LASTSHIP_PRECACHE_SECONDS")
-        self.lock_char_ids_recent_activity = asyncio.Lock(loop=self.loop)
+        self.lock_char_ids_recent_activity = asyncio.Lock()
         self.char_ids_recent_activity = set()
         self.ttl = self.config.get("SUBSYSTEM_CACHE_LASTSHIP_TTL")
         self.BulkCharacterNameToID = self.cm.BulkCharacterNameToID
@@ -222,7 +222,7 @@ class LastShip(AbstractMultiEndpoint):
         return return_dict
 
     def reset_last_ships_background(self, new_km: tb_kills):
-        self.loop.create_task(self._reset_last_ship(new_km))
+        asyncio.create_task(self._reset_last_ship(new_km))
 
     async def _reset_last_ship(self, new_km: tb_kills):
         pilot_ids = await self.executor(self._extract_characters, new_km)

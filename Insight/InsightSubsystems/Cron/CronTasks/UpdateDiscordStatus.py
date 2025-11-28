@@ -2,6 +2,7 @@ from InsightSubsystems.Cron.CronTasks.AbstractCronTask import AbstractCronTask
 import psutil
 import discord
 import InsightLogger
+import asyncio  
 
 
 class UpdateDiscordStatus(AbstractCronTask):
@@ -36,7 +37,8 @@ class UpdateDiscordStatus(AbstractCronTask):
                                                             psutil.virtual_memory()[3] / 2. ** 30)
         if self.service.config.get("INSIGHT_STATUS_FEEDCOUNT"):
             status_str += "Feeds: {} ".format(self.channel_manager.feed_count())
-        stats_zk = await self.loop.run_in_executor(None, self.zk.get_stats)
+        loop = asyncio.get_running_loop()
+        stats_zk = await loop.run_in_executor(None, self.zk.get_stats)
         d_status = discord.Status.online
         if self.service.config.get("INSIGHT_STATUS_TIME"):
             if stats_zk[0] <= 10:

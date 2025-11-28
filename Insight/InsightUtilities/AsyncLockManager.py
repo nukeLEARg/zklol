@@ -7,10 +7,7 @@ class AsyncLockManager(object):
         self.pool = {}
         self.logger = InsightLogger.InsightLogger.get_logger('InsightUtilities.AsyncLockManager',
                                                              'InsightUtilities.log', child=True)
-        if event_loop is None:
-            self.lock = asyncio.Lock(loop=asyncio.get_event_loop())
-        else:
-            self.lock = asyncio.Lock(loop=event_loop)
+        self.lock = asyncio.Lock()
 
     async def get_object(self, key, limit: int = 1):
         async with self.lock:

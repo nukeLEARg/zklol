@@ -14,12 +14,16 @@ class AbstractCronTask(metaclass=InsightSingleton):
         self.lg = InsightLogger.InsightLogger.get_logger('Cron.{}'.format(self.__class__.__name__),
                                                          'Cron.log', child=True)
         self.client = self.cron_manager.client
-        self.loop = self.cron_manager.loop
         self.service = self.cron_manager.service
         self.zk = self.cron_manager.zk
         self.channel_manager = self.client.channel_manager
         self.config = self.service.config
         self.task: asyncio.Task = None
+
+    @property
+    def loop(self) -> asyncio.AbstractEventLoop:
+        return asyncio.get_running_loop()
+
 
     def loop_iteration(self) -> int:
         raise NotImplementedError
@@ -67,4 +71,4 @@ class AbstractCronTask(metaclass=InsightSingleton):
                 await asyncio.sleep(self.get_wait_time())
 
     async def start_loop(self):
-        self.task = self.cron_manager.loop.create_task(self.cron_loop())
+        self.task = asyncio.create_task(self.cron_loop())

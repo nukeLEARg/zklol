@@ -5,7 +5,7 @@ from . import MemoryDiagnostic, MailExport, SetMotd, ResetCache
 class Admin(UnboundCommandBase):
     def __init__(self, unbound_service):
         super().__init__(unbound_service)
-        self.cLock = asyncio.Lock(loop=self.client.loop)
+        self.cLock = asyncio.Lock()
         self.admin_mem = MemoryDiagnostic.MemoryDiagnostic(self.unbound)
         self.admin_mail_export = MailExport.MailExport(self.unbound)
         self.set_motd = SetMotd.SetMotd(self.unbound)

@@ -1,5 +1,4 @@
 import discord
-from discord.embeds import EmptyEmbed
 from InsightExc import Utilities
 from datetime import datetime
 
@@ -62,7 +61,7 @@ class EmbedLimitedHelper(discord.Embed):
     def set_color(self, color: discord.Color):
         self.color = color
 
-    def set_author(self, *, name, url=EmptyEmbed, icon_url=EmptyEmbed):
+    def set_author(self, *, name, url=None, icon_url=None):
         char_count = 0
         if isinstance(url, str):
             char_count += self.char_count(url)
@@ -149,7 +148,7 @@ class EmbedLimitedHelper(discord.Embed):
         self._increment_counter(char_count)
         self.description = description
 
-    def set_footer(self, *, text=EmptyEmbed, icon_url=EmptyEmbed):
+    def set_footer(self, *, text=None, icon_url=None):
         char_count = 0
         if isinstance(text, str):
             text_length = self.char_count(text)

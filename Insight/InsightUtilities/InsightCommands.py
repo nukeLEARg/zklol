@@ -36,8 +36,7 @@ class InsightCommands(metaclass=InsightSingleton):
         self.all_commands = [c for i in self.commands.values() for c in i]
         self.all_commands.sort(key=len, reverse=True)
         self.notfound_timers = {}
-        self.loop = asyncio.get_event_loop()
-        self.lock = asyncio.Lock(loop=self.loop)
+        self.lock = asyncio.Lock()
 
     def __similar(self, message_txt):
         return difflib.get_close_matches(message_txt.lower(), self.all_commands)
@@ -64,7 +63,8 @@ class InsightCommands(metaclass=InsightSingleton):
         if not await self.is_command_async(prefixes, message_txt):
             return
         else:
-            selected_coro = await self.loop.run_in_executor(None, partial(self.get_matching_coro,
+            loop = asyncio.get_running_loop()
+            selected_coro = await loop.run_in_executor(None, partial(self.get_matching_coro,
                                                                                          channel_id, prefixes,
                                                                                          message_txt, **kwargs))
             if asyncio.iscoroutine(selected_coro):
@@ -81,7 +81,8 @@ class InsightCommands(metaclass=InsightSingleton):
         return command_hit
 
     async def is_command_async(self, prefixes: list, message_txt: str, channel_id: int = None) -> bool:
-        return await self.loop.run_in_executor(None, partial(self.is_command, prefixes,
+        loop = asyncio.get_running_loop()
+        return await loop.run_in_executor(None, partial(self.is_command, prefixes,
                                                                             message_txt, channel_id))
 
     def strip_prefix(self, prefixes: list, message_txt: str)->str:

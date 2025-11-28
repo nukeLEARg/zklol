@@ -5,7 +5,7 @@ from InsightUtilities import MemTracker
 class MemoryDiagnostic(UnboundCommandBase):
     def __init__(self, unbound_service):
         super().__init__(unbound_service)
-        self.cLock = asyncio.Lock(loop=self.client.loop)
+        self.cLock = asyncio.Lock()
 
     def command_description(self):
         return "Memory Diagnostic - Display the largest items in memory."

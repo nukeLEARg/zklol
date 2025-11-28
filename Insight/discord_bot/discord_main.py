@@ -12,6 +12,22 @@ import InsightLogger
 import logging
 import os
 import InsightSubsystems
+import traceback
+
+
+def handle_task_exception(loop, context):
+    # context["message"] will be "Task exception was never retrieved"
+    print("--- GLOBAL EXCEPTION HANDLER CAUGHT AN ERROR ---")
+    exception = context.get("exception")
+    if exception:
+        print(f"Exception Type: {type(exception)}")
+        print(f"Exception Message: {exception}")
+        # This is the most important part: print the full traceback
+        traceback.print_exception(type(exception), exception, exception.__traceback__)
+    else:
+        print(f"Error Message: {context.get('message')}")
+    print("--- END OF HANDLER OUTPUT ---")
+
 
 
 class Discord_Insight_Client(discord.Client):
@@ -34,11 +50,16 @@ class Discord_Insight_Client(discord.Client):
         self.threadpool_unbound = ThreadPoolExecutor(max_workers=1)
         self.subsystems = InsightSubsystems.SubsystemLoader(discord_client=self)
         self.unbound_commands = UnboundUtilityCommands(self)
+
+    async def setup_hook(self):
+        loop = asyncio.get_running_loop()
+        loop.set_exception_handler(handle_task_exception)
         self.loop.set_default_executor(self.threadpool_insight)
+        self.channelLocks = InsightUtilities.AsyncLockManager()
+        self.channelSemaphores = InsightUtilities.AsyncSemaphoreManager()
         self.loop.create_task(self.setup_tasks())
-        self.channelLocks = InsightUtilities.AsyncLockManager(self.loop)
-        self.channelSemaphores = InsightUtilities.AsyncSemaphoreManager(self.loop)
-        self.limiter = LimitManager()
+        self.limiter = await LimitManager.get_instance()
+
 
     def get_invite_url(self):
         try:
@@ -52,14 +73,15 @@ class Discord_Insight_Client(discord.Client):
         print('Logged in as: {}'.format(str(self.user.name)))
         print('Invite Link: {}'.format(self.get_invite_url()))
         print('This bot is a member of {} servers.'.format(str(len(self.guilds))))
-        print('Insight can see: {} servers and {} channels'.format(len(self.guilds), len(list(self.get_all_channels()))))
+        channel_count = sum(len(guild.channels) for guild in self.guilds)
+        print('Insight can see: {} servers and {} channels'.format(len(self.guilds), channel_count))
         print("Use 'CTRL-C' to shut down Insight from the console or run the '!quit' command from any Discord channel. "
               "Alternative options: Send SIGINT signal to the Insight process or run 'docker stop ContainerID' for a "
               "graceful shutdown.".format(os.getpid()))
         print('-------------------')
 
     async def setup_tasks(self):
-        self.loop.create_task(self.subsystems.start_tasks())
+        asyncio.create_task(self.subsystems.start_tasks())
         print("Waiting for Discord connection on ready...")
         await self.wait_until_ready()
         try:
@@ -70,15 +92,16 @@ class Discord_Insight_Client(discord.Client):
         await self.serverManager.loader()
         await self.service.zk_obj.make_queues()
         if not self.service.cli_args.startup_debug:
-            self.loop.create_task(self.service.zk_obj.pull_kms_ws())
+            asyncio.create_task(self.service.zk_obj.pull_kms_ws())
         await self.channel_manager.load_channels()
         if self.service.cli_args.startup_debug:
             print("Done with --startup-debug. Exiting.")
             sys.exit(0)
-        self.loop.create_task(self.service.zk_obj.pull_kms_redisq())
-        self.loop.create_task(self.service.zk_obj.coroutine_filters(self.threadpool_zk))
-        await self.loop.run_in_executor(None, self.service.zk_obj.debug_simulate)
-        self.loop.create_task(self.service.zk_obj.coroutine_process_json(self.threadpool_zk))
+        asyncio.create_task(self.service.zk_obj.pull_kms_redisq())
+        asyncio.create_task(self.service.zk_obj.coroutine_filters(self.threadpool_zk))
+        loop = asyncio.get_running_loop()
+        await loop.run_in_executor(None, self.service.zk_obj.debug_simulate)
+        asyncio.create_task(self.service.zk_obj.coroutine_process_json(self.threadpool_zk))
         self.insight_ready_event.set()
 
     async def close(self):

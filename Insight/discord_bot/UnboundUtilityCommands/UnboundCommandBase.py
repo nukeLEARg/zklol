@@ -16,12 +16,16 @@ class UnboundCommandBase(object):
         self.unbound: UnboundUtilityCommands = unbound_service
         self.client = self.unbound.client
         self.service = self.client.service
-        self.loop = self.client.loop
         self.serverManager = self.unbound.serverManager
         self.config = InsightUtilities.ConfigLoader()
         self.subcommands = {}
         if is_main_command:
             self.load_subcommands()
+
+    @property
+    def loop(self) -> asyncio.AbstractEventLoop:
+        return asyncio.get_running_loop()
+
 
     def load_subcommands(self):
         prefix = ["", "-", "--", ".", "!", "?"]
@@ -53,7 +57,8 @@ class UnboundCommandBase(object):
     async def get_subcommand_coro(self, m_text: str = ""):
         """returns the coro matching the subcommand and the string stripped of the subcommand.
         Returns None and the original string if no subcommand match."""
-        return await self.loop.run_in_executor(None, partial(self.get_subcommand_sync, m_text))
+        loop = asyncio.get_running_loop()
+        return await loop.run_in_executor(None, partial(self.get_subcommand_sync, m_text))
 
     @classmethod
     def mention(cls):

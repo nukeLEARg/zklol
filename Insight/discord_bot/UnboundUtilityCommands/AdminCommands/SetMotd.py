@@ -7,7 +7,7 @@ from InsightSubsystems.Cache.CacheEndpoint import InsightMeta
 class SetMotd(UnboundCommandBase):
     def __init__(self, unbound_service):
         super().__init__(unbound_service)
-        self.cLock = asyncio.Lock(loop=self.client.loop)
+        self.cLock = asyncio.Lock()
         self.InsightMeta: InsightMeta = InsightMeta()
 
     def command_description(self):

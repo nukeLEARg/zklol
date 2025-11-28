@@ -10,7 +10,7 @@ class ServerManager(object):
     def __init__(self, service_module, discord_client):
         self.service = service_module
         self.client: discord.Client = discord_client
-        self.lock = asyncio.Lock(loop=self.client.loop)
+        self.lock = asyncio.Lock()
         self.default_prefixes = ['?', '!']
         self.prefix_self = []
         self.guild_prefixes = {}

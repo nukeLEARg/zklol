@@ -9,7 +9,7 @@ from InsightUtilities import LimitManager
 class MailExport(UnboundCommandBase):
     def __init__(self, unbound_service):
         super().__init__(unbound_service)
-        self.cLock = asyncio.Lock(loop=self.client.loop)
+        self.cLock = asyncio.Lock()
 
     def command_description(self):
         return "Mail Export - Export a list of killmail ids to json file objects in the project 'mails' directory."

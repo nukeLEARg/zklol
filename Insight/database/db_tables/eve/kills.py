@@ -4,32 +4,33 @@ from dateutil.parser import parse as dateTimeParser
 from functools import cmp_to_key
 import operator
 import math
-from sqlalchemy import exists
+from sqlalchemy import exists, Column, Integer, String, BigInteger, Float, Boolean, DateTime, ForeignKey
+from sqlalchemy.orm import relationship, Mapped, mapped_column
+from typing import List, Optional
 import traceback
-from InsightUtilities.StaticHelpers import URLHelper
 
 
 class Kills(dec_Base.Base, table_row):
     __tablename__ = 'kills'
 
-    kill_id = Column(Integer,primary_key=True, nullable=False, autoincrement=False)
-    killmail_time = Column(DateTime,default=None,nullable=True, index=True)
-    solar_system_id = Column(Integer, ForeignKey("systems.system_id"), default=None, nullable=True, index=True)
-    locationID = Column(Integer, ForeignKey("locations.location_id"), default=None, nullable=True, index=True)
-    hash = Column(String,default=None,nullable=True)
-    fittedValue = Column(Float,default=0.0,nullable=False)
-    totalValue = Column(Float,default=0.0,nullable=False)
-    points = Column(Float,default=0.0,nullable=False)
-    npc = Column(Boolean,default=False,nullable=False)
-    solo = Column(Boolean,default=False,nullable=False)
-    awox = Column(Boolean, default=False,nullable=False)
-    href = Column(String,default=None,nullable=True)
-    loaded_time = Column(DateTime,default=datetime.datetime.utcnow(),nullable=False)
+    kill_id: Mapped[int] = mapped_column(Integer,primary_key=True, nullable=False, autoincrement=False)
+    killmail_time: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime,default=None,nullable=True, index=True)
+    solar_system_id: Mapped[int] = mapped_column(Integer, ForeignKey("systems.system_id"), default=None, nullable=True, index=True)
+    locationID: Mapped[int]  = mapped_column(Integer, ForeignKey("locations.location_id"), default=None, nullable=True, index=True)
+    hash: Mapped[Optional[str]] = mapped_column(String,default=None,nullable=True)
+    fittedValue: Mapped[float] = mapped_column(Float,default=0.0,nullable=False)
+    totalValue: Mapped[float]  = mapped_column(Float,default=0.0,nullable=False)
+    points: Mapped[float] = mapped_column(Float,default=0.0,nullable=False)
+    npc: Mapped[bool] = mapped_column(Boolean,default=False,nullable=False)
+    solo: Mapped[bool]  = mapped_column(Boolean,default=False,nullable=False)
+    awox: Mapped[bool]  = mapped_column(Boolean, default=False,nullable=False)
+    href: Mapped[Optional[str]] = mapped_column(String,default=None,nullable=True)
+    loaded_time: Mapped[datetime.datetime] = mapped_column(DateTime,default=datetime.datetime.utcnow(),nullable=False)
 
-    object_system: systems.Systems = relationship("Systems", uselist=False, back_populates="object_kills_in_system",lazy="joined")
-    object_attackers: List[attackers.Attackers] = relationship("Attackers",uselist=True,back_populates="object_kill",lazy="joined")
-    object_victim: victims.Victims = relationship("Victims",uselist=False,back_populates="object_kill",lazy="joined")
-    object_location: locations.Locations = relationship("Locations",uselist=False, back_populates="object_kills_at_location",lazy="joined")
+    object_system: Mapped[Optional["systems.Systems"]] = relationship("Systems", uselist=False, back_populates="object_kills_in_system", lazy="joined")
+    object_attackers: Mapped[List["attackers.Attackers"]] = relationship("Attackers", uselist=True, back_populates="object_kill", lazy="joined")
+    object_victim: Mapped[Optional["victims.Victims"]] = relationship("Victims", uselist=False, back_populates="object_kill", lazy="joined")
+    object_location: Mapped[Optional["locations.Locations"]] = relationship("Locations", uselist=False, back_populates="object_kills_at_location", lazy="joined")
 
     def __init__(self, data: dict):
         self.loaded_time = datetime.datetime.utcnow()
