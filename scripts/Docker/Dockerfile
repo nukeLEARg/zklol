@@ -1,12 +1,12 @@
 ARG PythonTag="3.6.15-buster"
 
-FROM openjdk:11 as SwaggerRunner
+FROM eclipse-temurin:11-jdk as SwaggerRunner
 ARG CodegenVersion="2.4.25"
 RUN wget https://repo1.maven.org/maven2/io/swagger/swagger-codegen-cli/$CodegenVersion/swagger-codegen-cli-$CodegenVersion.jar -O swagger-codegen-cli.jar
 RUN java -jar ./swagger-codegen-cli.jar generate \
- -i "https://esi.evetech.net/_latest/swagger.json" \
- -l python \
- -o /python-client
+    -i "https://esi.evetech.net/_latest/swagger.json" \
+    -l python \
+    -o /python-client
 
 FROM alpine:latest as SDE
 RUN wget https://www.fuzzwork.co.uk/dump/sqlite-latest.sqlite.bz2
@@ -74,7 +74,7 @@ ENV SUBSYSTEM_CACHE_LASTSHIP_TTL=""
 ENV CRON_SYNCCONTACTS=""
 ENV INSIGHT_ADMINS=""
 ENV 8BALL_RESPONSES=""
-ENV ZK_REDISQ_URL="https://redisq.zkillboard.com/listen.php"
+ENV ZK_REDISQ_URL="https://zkillredisq.stream/listen.php"
 ENV ZK_WS_URL="wss://zkillboard.com/websocket/"
 ENV ZK_ID_RESET=""
 ENV REIMPORT_LOCATIONS_MINUTES=""
@@ -95,25 +95,31 @@ ENV CALLBACK_REDIRECT_SUCCESS=""
 
 ENV PYTHONUNBUFFERED=1
 
-#packages for Insight and apt utils
-RUN apt-get update && apt-get install -y \
- apt-utils \
- curl \
- ca-certificates \
- gnupg \
- lsb-release \
- build-essential \
- git \
- zip \
- sudo
 
 #https://www.postgresql.org/download/linux/debian/
-RUN sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
-RUN curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
+RUN echo "deb http://archive.debian.org/debian buster main" > /etc/apt/sources.list && \
+    echo "deb http://archive.debian.org/debian-security buster/updates main" >> /etc/apt/sources.list && \
+    echo "Acquire::Check-Valid-Until false;" > /etc/apt/apt.conf.d/99ignore-expiry
+
+RUN echo "deb https://apt-archive.postgresql.org/pub/repos/apt buster-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+RUN curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - || true
+
+
+#packages for Insight and apt utils
+RUN apt-get update && apt-get install -y \
+    apt-utils \
+    curl \
+    ca-certificates \
+    gnupg \
+    lsb-release \
+    build-essential \
+    git \
+    zip \
+    sudo
 
 #https://www.psycopg.org/docs/install.html#install-from-source avoid using pre-compiled binary for psycopg2 driver
 RUN apt-get update && apt-get install -y \
- libpq-dev
+    libpq-dev
 
 
 RUN rm -rf /var/lib/apt/lists/*
